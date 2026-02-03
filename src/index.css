@@ -1,13 +1,43 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;600&family=Montserrat:wght@700&display=swap');
+
+:root {
+  --modish-olive: #4A4A2A;
+  --modish-gold: #C5A059; /* Warna emas untuk aksen logo */
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Class khusus untuk teks logo agar mirip gambar */
+.logo-font {
+  font-family: 'Playfair Display', serif;
+  text-transform: lowercase;
+  letter-spacing: -1px;
+  font-weight: 700;
+}
+
+.logo-sub {
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.shadow-hover:hover {
+  shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Efek Zoom Gambar saat di-hover */
+.card:hover .scale-hover {
+  transform: scale(1.1);
+}
+@media (min-width: 992px) {
+  .px-lg-custom {
+    padding-left: 10% !important;
+    padding-right: 10% !important;
+  }
+}
+
+.form-control:focus {
+  border-color: #4A4A2A;
+  box-shadow: 0 0 0 0.2rem rgba(74, 74, 42, 0.1);
 }

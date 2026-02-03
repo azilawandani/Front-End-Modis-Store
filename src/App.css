@@ -36,3 +36,56 @@
     transform: rotate(360deg);
   }
 }
+.border-bottom-dashed {
+  border-bottom: 1px dashed #dee2e6;
+}
+.border-bottom-dashed:last-child {
+  border-bottom: none;
+}
+/* Gaya dasar untuk NavLink di Navbar */
+.navbar-nav .nav-link {
+  color: #555 !important;
+  position: relative;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding-bottom: 5px; /* Memberi ruang untuk garis bawah */
+}
+
+/* Warna teks saat menu Aktif */
+.navbar-nav .nav-link.active {
+  color: #E19E44 !important; /* Warna Orange Khas Modis */
+  font-weight: 700;
+}
+
+/* Membuat elemen garis bawah (Pseudo-element) */
+.navbar-nav .nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  background-color: #E19E44;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-50%);
+}
+
+/* Animasi garis melebar saat menu mendapatkan class .active dari React Router */
+.navbar-nav .nav-link.active::after {
+  width: 80%; /* Garis muncul sepanjang 80% dari lebar teks */
+}
+
+/* Efek hover (Garis muncul sedikit saat diarahkan mouse) */
+.navbar-nav .nav-link:hover::after {
+  width: 40%;
+}
+
+/* Mencegah dropdown-item memiliki garis bawah yang aneh */
+.dropdown-item::after {
+  display: none !important;
+}
+
+.dropdown-item.active {
+  background-color: #f8f9fa;
+  color: #E19E44 !important;
+}
