@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, ShoppingBag, Star, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Recommendation from '../components/Recommendation'; // 1. Import Komponen Rekomendasi
 
 const Landing = () => {
   return (
@@ -66,6 +67,9 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* 2. SECTION REKOMENDASI (DITAMPILKAN DI SINI) */}
+      <Recommendation />
+
       {/* Categories Section */}
       <section className="py-5 bg-white">
         <div className="container py-4">
@@ -74,7 +78,6 @@ const Landing = () => {
             <h2 className="fw-bold font-serif display-6">Telusuri Berdasarkan Kategori</h2>
           </div>
 
-          {/* Grid Kategori ke Samping */}
           <div className="row g-4 justify-content-center">
             {[
               { name: 'HIJAB', path: '/kategori/hijab', image: '/assets/hijab.jpg' },
@@ -85,7 +88,6 @@ const Landing = () => {
               <div key={cat.name} className="col-6 col-md-3">
                 <Link to={cat.path} className="text-decoration-none text-dark">
                   <div className="card border-0 shadow-sm h-100 overflow-hidden position-relative shadow-hover transition">
-                    {/* Container Gambar */}
                     <div className="overflow-hidden" style={{ height: '300px' }}>
                       <img 
                         src={cat.image} 
@@ -94,8 +96,6 @@ const Landing = () => {
                         style={{ transition: 'transform 0.5s ease' }}
                       />
                     </div>
-                    
-                    {/* Judul Kategori */}
                     <div className="card-body bg-white text-center py-3">
                       <h5 className="mb-1 fw-bold" style={{ fontSize: '0.9rem', letterSpacing: '1px' }}>{cat.name}</h5>
                       <small className="text-muted">Lihat Koleksi →</small>
@@ -107,7 +107,6 @@ const Landing = () => {
           </div>
         </div>
       </section>
-      
     </div>
   );
 };

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// Provider
+// Providers
 import { CartProvider } from './context/CartContext'; 
+import { AuthProvider } from './context/AuthContext'; 
 
 // Assets & Styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -11,6 +12,7 @@ import 'leaflet/dist/leaflet.css';
 
 // Komponen Global
 import Navbar from './components/Navbar';
+import NavbarAdmin from './components/NavbarAdmin'; 
 import Footer from './components/Footer';
 
 // Halaman
@@ -20,89 +22,129 @@ import DetailProduct from './pages/DetailProduct';
 import CategoryPage from './pages/CategoryPage';
 import Contact from './pages/Contact';
 import Help from './pages/Help';
-import OrderStatus from './pages/OrderStatus'; // Halaman Resi setelah Checkout
+import OrderStatus from './pages/OrderStatus'; 
 import Login from './pages/Auth/Login';
 import SignUp from './pages/Auth/SignUp';
 import Profile from './pages/Profile';
 import CartPage from './pages/CartPage'; 
 import CheckoutPage from './pages/CheckoutPage';
-// TrackingPage dihapus sesuai permintaan
-import LacakPaket from './pages/LacakPaket'; // Halaman Detail Timeline
-import RiwayatPesanan from './pages/RiwayatPesanan'; // Daftar Pesanan Aktif
+import LacakPaket from './pages/LacakPaket'; 
+import RiwayatPesanan from './pages/RiwayatPesanan'; 
 import PesananEmpty from './pages/PesananEmpty';
+
+// Admin Pages
+import AdminDashboard from './pages/AdminDashboard'; 
+import StokProduk from './pages/StokProduk';
+import PesananAdmin from './pages/PesananAdmin';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true');
+  const [userRole, setUserRole] = useState('');
+
+  const checkAuth = () => {
+    const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
+    setIsLoggedIn(loggedInStatus);
+    
+    if (loggedInStatus) {
+      const user = JSON.parse(localStorage.getItem('user'));
+      setUserRole(user?.role || 'user');
+    } else {
+      setUserRole('');
+    }
+  };
 
   useEffect(() => {
-    const checkLogin = () => {
-      setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true');
-    };
-    window.addEventListener('storage', checkLogin);
-    return () => window.removeEventListener('storage', checkLogin);
+    checkAuth();
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
   return (
-    <CartProvider>
-      <Router>
-        <div className="d-flex flex-column min-vh-100">
-          <Navbar isLoggedIn={isLoggedIn} />
-          
-          <main className="flex-grow-1" style={{ paddingTop: '70px' }}>
-            <Routes>
-              {/* --- Public Routes --- */}
-              <Route path="/" element={<Landing />} />
-              <Route path="/produk" element={<ProductPage />} />
-              <Route path="/produk/:slug" element={<DetailProduct />} />
-              <Route path="/kategori/:categoryName" element={<CategoryPage />} />
-              <Route path="/kontak" element={<Contact />} />
-              <Route path="/bantuan" element={<Help />} />
-              <Route path="/cart" element={<CartPage isLoggedIn={isLoggedIn} />} />
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <div className="d-flex flex-column min-vh-100">
+            
+            {/* Navigasi Dinamis Berdasarkan Role */}
+            {isLoggedIn && userRole === 'admin' ? (
+              <NavbarAdmin setIsLoggedIn={setIsLoggedIn} />
+            ) : (
+              <Navbar isLoggedIn={isLoggedIn} />
+            )}
+            
+            <main className="flex-grow-1" style={{ paddingTop: '80px' }}>
+              <Routes>
+                {/* --- Public Routes --- */}
+                <Route 
+                  path="/" 
+                  element={userRole === 'admin' ? <Navigate to="/admin" /> : <Landing />} 
+                />
+                <Route path="/produk" element={<ProductPage />} />
+                <Route path="/produk/:slug" element={<DetailProduct />} />
+                <Route path="/kategori/:categoryName" element={<CategoryPage />} />
+                <Route path="/kontak" element={<Contact />} />
+                <Route path="/bantuan" element={<Help />} />
+                <Route path="/cart" element={<CartPage isLoggedIn={isLoggedIn} />} />
 
-              {/* --- Auth Routes --- */}
-              <Route 
-                path="/login" 
-                element={isLoggedIn ? <Navigate to="/profile" /> : <Login setIsLoggedIn={setIsLoggedIn} />} 
-              />
-              <Route path="/signup" element={<SignUp />} />
-              
-              {/* --- Protected Routes (Harus Login) --- */}
-              <Route 
-                path="/profile" 
-                element={isLoggedIn ? <Profile isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/login" />} 
-              />
-              <Route 
-                path="/checkout" 
-                element={isLoggedIn ? <CheckoutPage /> : <Navigate to="/login" />} 
-              />
-              
-              {/* Halaman Konfirmasi Resi (setelah klik bayar) */}
-              <Route 
-                path="/pesanan" 
-                element={isLoggedIn ? <OrderStatus /> : <PesananEmpty />} 
-              />
+                {/* --- Auth Routes --- */}
+                <Route 
+                  path="/login" 
+                  element={isLoggedIn ? (userRole === 'admin' ? <Navigate to="/admin" /> : <Navigate to="/profile" />) : <Login setIsLoggedIn={setIsLoggedIn} />} 
+                />
+                <Route path="/signup" element={<SignUp />} />
+                
+                {/* --- Protected Routes (User) --- */}
+                <Route 
+                  path="/profile" 
+                  element={isLoggedIn ? <Profile isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/login" />} 
+                />
+                <Route 
+                  path="/checkout" 
+                  element={isLoggedIn ? <CheckoutPage /> : <Navigate to="/login" />} 
+                />
 
-              {/* Halaman Utama Daftar Pesanan Aktif (menggantikan tracking page) */}
-              <Route 
-                path="/riwayat" 
-                element={isLoggedIn ? <RiwayatPesanan /> : <Navigate to="/login" />} 
-              />
+                {/* PERUBAHAN DI SINI: /pesanan sekarang mengarah ke RiwayatPesanan agar daftar muncul */}
+                <Route 
+                  path="/pesanan" 
+                  element={isLoggedIn ? <RiwayatPesanan /> : <PesananEmpty />} 
+                />
 
-              {/* Halaman Detail Timeline Pengiriman */}
-              <Route 
-                path="/lacak-paket/:orderId" 
-                element={isLoggedIn ? <LacakPaket /> : <Navigate to="/login" />} 
-              />
+                {/* PERUBAHAN DI SINI: Rute baru untuk struk sukses setelah konfirmasi checkout */}
+                <Route 
+                  path="/status-pesanan" 
+                  element={isLoggedIn ? <OrderStatus /> : <Navigate to="/login" />} 
+                />
 
-              {/* Fallback Route */}
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </main>
+                {/* Rute lama /riwayat dialihkan juga ke RiwayatPesanan agar konsisten */}
+                <Route 
+                  path="/riwayat" 
+                  element={isLoggedIn ? <RiwayatPesanan /> : <Navigate to="/login" />} 
+                />
 
-          <Footer />
-        </div>
-      </Router>
-    </CartProvider>
+                <Route 
+                  path="/lacak-paket/:orderId" 
+                  element={isLoggedIn ? <LacakPaket /> : <Navigate to="/login" />} 
+                />
+
+                {/* --- Admin Routes --- */}
+                <Route 
+                  path="/admin" 
+                  element={isLoggedIn && userRole === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} 
+                />
+                <Route path="/admin/list-produk" element={isLoggedIn && userRole === 'admin' ? <StokProduk /> : <Navigate to="/" />} />
+                <Route path="/admin/pesanan" element={isLoggedIn && userRole === 'admin' ? <PesananAdmin /> : <Navigate to="/" />} />
+
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </main>
+
+            {/* Sembunyikan footer untuk admin */}
+            {userRole !== 'admin' && <Footer />}
+          </div>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

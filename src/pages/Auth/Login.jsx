@@ -14,28 +14,46 @@ const Login = ({ setIsLoggedIn }) => {
         email,
         password
       });
-      // Di Login.jsx saat sukses
-const userToStore = {
-  id: response.data.user.id, // Pastikan backend mengirim field ini
-  nama: response.data.user.nama,
-  email: response.data.user.email
-};
 
+      const { token, user } = response.data;
 
-      // Simpan data ke localStorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      localStorage.setItem('isLoggedIn', 'true');
+      // --- PERBAIKAN DI SINI ---
+      // Pastikan district dan postalCode disertakan agar alamat lengkap tersimpan di localStorage
+      const userToStore = {
+        id: user.id || user._id,
+        nama: user.nama,
+        email: user.email,
+        role: user.role || 'user',
+        phone: user.phone || "",
+        province: user.province || "",
+        city: user.city || "",
+        district: user.district || "",   // TAMBAHKAN INI
+        postalCode: user.postalCode || "", // TAMBAHKAN INI
+        address: user.address || "",
+        location: user.location,
+        profiling: user.profiling
+      };
+
+      // 2. Simpan ke localStorage
+      localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userToStore));
+      localStorage.setItem('isLoggedIn', 'true');
       
-      // Update state navbar
       if (setIsLoggedIn) setIsLoggedIn(true);
       
-      alert("Login Berhasil!");
-      navigate('/profile');
+      alert(`Login Berhasil! Selamat datang, ${user.nama}`);
+
+      // 3. LOGIKA REDIRECT
+      if (userToStore.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/profile');
+      }
+
       window.location.reload();
     } catch (error) {
-      alert(error.response?.data?.message || "Login Gagal!");
+      console.error("Login Error:", error.response);
+      alert(error.response?.data?.message || "Login Gagal! Periksa email dan password.");
     }
   };
 
@@ -63,7 +81,9 @@ const userToStore = {
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-1">
                   <label className="form-label small fw-bold text-muted mb-0">Password</label>
-                  <a href="#" className="text-decoration-none text-primary" style={{ fontSize: '11px' }}>Lupa password?</a>
+                  <a href="#!" className="text-decoration-none text-primary" style={{ fontSize: '11px' }}>
+                    Lupa password?
+                  </a>
                 </div>
                 <input 
                   type="password" 

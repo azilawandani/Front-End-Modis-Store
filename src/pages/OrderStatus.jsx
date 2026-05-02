@@ -1,108 +1,75 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Phone, HelpCircle } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { ChevronLeft, Phone, HelpCircle, PackageCheck, Truck, ShoppingBag } from 'lucide-react';
+// Hapus useCart jika Anda tidak menggunakannya untuk lastOrder, 
+// atau biarkan jika masih dibutuhkan untuk fungsi lain.
 
 const OrderStatus = () => {
   const navigate = useNavigate();
-  const { lastOrder } = useCart(); // Ambil data pesanan terakhir dari context
+  const [lastOrder, setLastOrder] = useState(null);
 
-  // Tampilan jika data pesanan tidak ditemukan
+  // Mengambil data dari sessionStorage saat komponen dimuat
+  useEffect(() => {
+    const data = sessionStorage.getItem('lastOrder');
+    if (data) {
+      setLastOrder(JSON.parse(data));
+    }
+  }, []);
+
   if (!lastOrder) {
     return (
       <div className="container py-5 mt-5 text-center">
-        <p className="text-muted">Tidak ada data pesanan terbaru.</p>
-        <button className="btn btn-dark" onClick={() => navigate('/produk')}>Belanja Sekarang</button>
+        <PackageCheck size={60} className="text-muted mb-3 opacity-25" />
+        <p className="text-muted">Tidak ada pesanan aktif saat ini.</p>
+        <button className="btn btn-dark px-4 rounded-pill" onClick={() => navigate('/produk')}>Belanja Produk Terbaru</button>
       </div>
     );
   }
 
   return (
-    <div className="bg-light min-vh-100 py-5 mt-5 text-start">
+    <div className="bg-light min-vh-100 py-5 mt-5 text-start text-dark">
       <div className="container d-flex justify-content-center">
-        <div className="bg-white shadow-sm rounded-0 w-100" style={{ maxWidth: '500px' }}>
+        <div className="bg-white shadow rounded-4 overflow-hidden w-100" style={{ maxWidth: '500px' }}>
           
-          {/* Status Estimasi */}
-          <div className="p-3 text-white" style={{ backgroundColor: '#4A4631' }}>
-            <p className="mb-0 small">Estimasi Tiba: 2-3 Hari Kerja</p>
+          <div className="p-4 text-white text-center" style={{ backgroundColor: '#4A4631' }}>
+            <h5 className="fw-bold mb-1">Pesanan Berhasil!</h5>
+            <p className="mb-0 small opacity-75">Estimasi Tiba: 2-3 Hari Kerja (JNE)</p>
           </div>
 
-          {/* Rincian Produk yang Dipesan secara Dinamis */}
           <div className="p-4 border-bottom">
-            <p className="small text-muted mb-3">Info Pengiriman : JNE Express (Reguler)</p>
-            
             {lastOrder.items.map((item, index) => (
-              <div key={index} className="d-flex align-items-center gap-3 mb-4">
-                <img 
-                  src={item.img || item.image} 
-                  alt={item.name} 
-                  style={{ width: '80px', height: '100px', objectFit: 'cover' }} 
-                />
+              <div key={index} className="d-flex align-items-center gap-3 mb-3">
+                {/* Pastikan menggunakan item.image atau item.img sesuai data dari CheckoutPage */}
+                <img src={item.image || item.img} alt={item.nama} style={{ width: '60px', height: '60px', objectFit: 'cover' }} className="rounded" />
                 <div className="flex-grow-1">
-                  <div className="d-flex justify-content-between">
-                    <h6 className="fw-bold mb-1">{item.name}</h6>
-                    <span className="small fw-bold">Rp.{item.price.toLocaleString('id-ID')}</span>
-                  </div>
-                  <p className="small text-muted mb-0 mt-2">
-                    Size: {item.size} | Color: {item.color} | Qty: {item.qty}
-                  </p>
+                  <h6 className="fw-bold mb-0 small">{item.nama}</h6>
+                  {/* Menggunakan item.varian dan item.jumlah sesuai struktur CheckoutPage */}
+                  <p className="small text-muted mb-0">{item.varian} | {item.jumlah}x</p>
                 </div>
+                {/* Menangani toLocaleString agar tidak error jika harga kosong */}
+                <span className="small fw-bold">Rp.{(item.harga || 0).toLocaleString('id-ID')}</span>
               </div>
             ))}
-
-            <div className="d-flex justify-content-between pt-3 border-top">
-              <span className="fw-bold">Total Pembayaran</span>
-              <span className="fw-bold h5 mb-0" style={{ color: '#E19E44' }}>
-                Rp.{lastOrder.total.toLocaleString('id-ID')}
-              </span>
+            <div className="d-flex justify-content-between pt-3 border-top mt-2">
+              <span className="fw-bold small">Total Pembayaran (COD)</span>
+              {/* Menggunakan totalHarga sesuai yang dikirim dari CheckoutPage */}
+              <span className="fw-bold text-warning">Rp.{(lastOrder.totalHarga || 0).toLocaleString('id-ID')}</span>
             </div>
           </div>
 
-          {/* Nomor Pesanan */}
-          <div className="p-2 text-white d-flex justify-content-between px-4" style={{ backgroundColor: '#4A4631' }}>
-            <span className="small">No. Pesanan</span>
-            <span className="small">{lastOrder.noPesanan}</span>
+          <div className="p-4 d-grid gap-2">
+            <button 
+              className="btn text-white py-2 fw-bold d-flex align-items-center justify-content-center gap-2" 
+              style={{ backgroundColor: '#E19E44', border: 'none' }}
+              // Navigasi ke halaman riwayat pesanan (path /pesanan)
+              onClick={() => navigate('/pesanan')}
+            >
+              <Truck size={18} /> Lihat Riwayat Pesanan
+            </button>
+            <button className="btn btn-outline-dark py-2 fw-bold d-flex align-items-center justify-content-center gap-2" onClick={() => navigate('/produk')}>
+              <ShoppingBag size={18} /> Kembali Belanja
+            </button>
           </div>
-
-          <div className="p-4 border-bottom bg-white">
-            <div className="d-flex justify-content-between mb-3 small">
-              <span className="text-muted">Metode Pembayaran</span>
-              <span className="fw-bold">Cash on Delivery (COD)</span>
-            </div>
-            <div className="d-flex justify-content-between mb-3 small">
-              <span className="text-muted">Waktu Pemesanan</span>
-              <span>{lastOrder.tanggal}</span>
-            </div>
-          </div>
-
-          {/* Bagian Bantuan */}
-          <div className="p-4 bg-light bg-opacity-50 text-center">
-            <h6 className="fw-bold mb-3 small">Terima kasih telah berbelanja di MODIS Store!</h6>
-            <div className="d-grid gap-2">
-              <button className="btn btn-outline-dark btn-sm d-flex align-items-center justify-content-center gap-2">
-                <Phone size={14}/> Hubungi Penjual
-              </button>
-            </div>
-          </div>
-
-         {/* Tombol Aksi */}
-<div className="p-4 d-flex flex-column gap-2">
-  <button 
-    className="btn text-white w-100 fw-bold rounded-1 py-2"
-    style={{ backgroundColor: '#E19E44', border: 'none' }}
-    // PERBAIKAN: Arahkan ke rute Riwayat Pesanan (sesuai App.js kamu)
-    onClick={() => navigate('/riwayat')} 
-  >
-    Lacak Pesanan
-  </button>
-  
-  <button 
-    className="btn btn-outline-dark w-100 fw-bold rounded-1 py-2"
-    onClick={() => navigate('/produk')}
-  >
-    Belanja Lagi
-  </button>
-</div>
 
         </div>
       </div>
