@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, Trash2, Edit, Search, X } from 'lucide-react';
+import { Package, Trash2, Edit, Search, AlertTriangle } from 'lucide-react';
 
 const StokProduk = () => {
   const [products, setProducts] = useState([]);
@@ -44,8 +44,9 @@ const StokProduk = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
+      // Endpoint disesuaikan dengan aksi PUT kamu
       await axios.put(`http://localhost:5000/api/products/update/${selectedProduct._id}`, selectedProduct);
-      alert("✅ Produk berhasil diperbarui!");
+      alert("✅ Stok dan Data Produk berhasil diperbarui!");
       setShowEditModal(false);
       fetchProducts();
     } catch (err) {
@@ -85,7 +86,8 @@ const StokProduk = () => {
                 <th className="ps-4">Produk</th>
                 <th>Kategori</th>
                 <th>Harga</th>
-                <th>Detail Atribut</th>
+                <th>Jumlah Stok</th>
+                <th>Status</th>
                 <th className="text-center">Aksi</th>
               </tr>
             </thead>
@@ -100,9 +102,26 @@ const StokProduk = () => {
                   </td>
                   <td><span className="badge bg-light text-dark border">{item.category}</span></td>
                   <td className="fw-semibold">Rp {item.price?.toLocaleString()}</td>
+                  {/* Kolom Stok Baru */}
                   <td>
-                    <small className="text-muted d-block">Gaya: {item.features?.[0]}</small>
-                    <small className="text-muted d-block">Warna: {item.colors?.[0]?.name}</small>
+                    <div className="d-flex align-items-center gap-2">
+                      <Package size={16} className={item.stock <= 5 ? "text-danger" : "text-muted"} />
+                      <span className={`fw-bold ${item.stock <= 5 ? "text-danger" : "text-dark"}`}>
+                        {item.stock} Pcs
+                      </span>
+                    </div>
+                  </td>
+                  {/* Kolom Status Baru */}
+                  <td>
+                    {item.stock <= 5 ? (
+                      <span className="badge bg-danger-subtle text-danger border border-danger-subtle d-flex align-items-center gap-1" style={{width: 'fit-content'}}>
+                        <AlertTriangle size={12}/> Stok Menipis
+                      </span>
+                    ) : (
+                      <span className="badge bg-success-subtle text-success border border-success-subtle" style={{width: 'fit-content'}}>
+                        Tersedia
+                      </span>
+                    )}
                   </td>
                   <td className="text-center">
                     <div className="d-flex justify-content-center gap-2">
@@ -124,7 +143,7 @@ const StokProduk = () => {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content border-0 rounded-4 shadow">
               <div className="modal-header border-0 pb-0">
-                <h5 className="fw-bold">Edit Katalog Produk</h5>
+                <h5 className="fw-bold">Edit Katalog & Stok</h5>
                 <button type="button" className="btn-close shadow-none" onClick={() => setShowEditModal(false)}></button>
               </div>
               <form onSubmit={handleUpdate}>
@@ -143,9 +162,21 @@ const StokProduk = () => {
                       <input type="number" className="form-control" value={selectedProduct.price} onChange={(e) => setSelectedProduct({...selectedProduct, price: Number(e.target.value)})} />
                     </div>
                   </div>
-                  <div className="mb-3">
-                    <label className="small fw-bold">Link Gambar</label>
-                    <input type="text" className="form-control" value={selectedProduct.img} onChange={(e) => setSelectedProduct({...selectedProduct, img: e.target.value})} />
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      {/* Input Stok Baru di Modal */}
+                      <label className="small fw-bold text-primary">Jumlah Stok</label>
+                      <input 
+                        type="number" 
+                        className="form-control border-primary" 
+                        value={selectedProduct.stock} 
+                        onChange={(e) => setSelectedProduct({...selectedProduct, stock: Number(e.target.value)})} 
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="small fw-bold">Link Gambar</label>
+                      <input type="text" className="form-control" value={selectedProduct.img} onChange={(e) => setSelectedProduct({...selectedProduct, img: e.target.value})} />
+                    </div>
                   </div>
                 </div>
                 <div className="modal-footer border-0 pt-0">

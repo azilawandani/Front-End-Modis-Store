@@ -17,8 +17,8 @@ const Login = ({ setIsLoggedIn }) => {
 
       const { token, user } = response.data;
 
-      // --- PERBAIKAN DI SINI ---
-      // Pastikan district dan postalCode disertakan agar alamat lengkap tersimpan di localStorage
+      // --- SINRONISASI DATA TERBARU ---
+      // Kita memetakan ulang data dari database ke object localStorage
       const userToStore = {
         id: user.id || user._id,
         nama: user.nama,
@@ -27,23 +27,33 @@ const Login = ({ setIsLoggedIn }) => {
         phone: user.phone || "",
         province: user.province || "",
         city: user.city || "",
-        district: user.district || "",   // TAMBAHKAN INI
-        postalCode: user.postalCode || "", // TAMBAHKAN INI
+        district: user.district || "",
+        postalCode: user.postalCode || "",
         address: user.address || "",
         location: user.location,
-        profiling: user.profiling
+        // Pastikan profiling membawa field kategoriFavorit, TB, dan BB terbaru
+        profiling: {
+          tinggiBadan: user.profiling?.tinggiBadan || 0,
+          beratBadan: user.profiling?.beratBadan || 0,
+          rekomendasiUkuran: user.profiling?.rekomendasiUkuran || "",
+          warnaFavorit: user.profiling?.warnaFavorit || "",
+          favBahan: user.profiling?.favBahan || "",
+          gayaPakaian: user.profiling?.gayaPakaian || "",
+          motifDisukai: user.profiling?.motifDisukai || "",
+          kategoriFavorit: user.profiling?.kategoriFavorit || "" // FIELD KRUSIAL
+        }
       };
 
-      // 2. Simpan ke localStorage
+      // Simpan ke localStorage sebagai sesi aktif
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userToStore));
       localStorage.setItem('isLoggedIn', 'true');
       
       if (setIsLoggedIn) setIsLoggedIn(true);
       
-      alert(`Login Berhasil! Selamat datang, ${user.nama}`);
+      alert(`Login Berhasil! Selamat datang, ${userToStore.nama}`);
 
-      // 3. LOGIKA REDIRECT
+      // REDIRECT BERDASARKAN ROLE
       if (userToStore.role === 'admin') {
         navigate('/admin');
       } else {
@@ -63,7 +73,7 @@ const Login = ({ setIsLoggedIn }) => {
         <div className="col-12 col-lg-6 d-flex flex-column justify-content-center px-4 px-md-5">
           <div className="mx-auto w-100" style={{ maxWidth: '400px' }}>
             <h2 className="fw-bold text-dark mb-2 h3">Selamat Datang Kembali</h2>
-            <p className="text-muted small mb-4">Masuk dengan akun yang sudah terdaftar</p>
+            <p className="text-muted small mb-4">Masuk ke Modis Store untuk personalisasi belanja Anda</p>
 
             <form onSubmit={handleLogin}>
               <div className="mb-3">
@@ -100,11 +110,11 @@ const Login = ({ setIsLoggedIn }) => {
                 className="btn w-100 text-white py-2 fw-bold shadow-sm border-0" 
                 style={{ backgroundColor: '#4A4A2A', borderRadius: '8px' }}
               >
-                Login
+                Masuk Sekarang
               </button>
             </form>
             <p className="mt-5 text-center small text-muted font-medium">
-              Belum Punya Akun? <Link to="/signup" className="text-primary text-decoration-none fw-bold">Daftar</Link>
+              Belum Punya Akun? <Link to="/signup" className="text-primary text-decoration-none fw-bold">Daftar Disini</Link>
             </p>
           </div>
         </div>

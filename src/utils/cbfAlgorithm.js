@@ -1,59 +1,88 @@
 /**
- * Logika Content-Based Filtering untuk Modis Store
- * Menghitung kemiripan antara Profil User dengan Deskripsi Produk
+ * Logika Content-Based Filtering Pro (Optimized for Skripsi)
+ * Menggunakan Weighted Vector Matching untuk akurasi tinggi
  */
 
-// 1. Fungsi untuk membersihkan teks dan mengubah jadi array kata (Tokenizing)
+// 1. Fungsi Tokenizing & Cleaning
 const tokenize = (text) => {
-    return text.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, "").split(/\s+/);
+    if (!text) return [];
+    // Menghapus karakter khusus dan memisahkan kata
+    return text.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, "").split(/\s+/).filter(t => t !== "");
 };
 
-// 2. Fungsi menghitung Term Frequency (TF)
-const getTF = (tokens) => {
-    const tf = {};
-    tokens.forEach(word => {
-        tf[word] = (tf[word] || 0) + 1;
-    });
-    return tf;
-};
-
-// 3. Fungsi menghitung Cosine Similarity antara dua vektor
-const calculateCosineSimilarity = (vecA, vecB) => {
-    const intersection = Object.keys(vecA).filter(word => vecB[word]);
+// 2. Fungsi Menghitung Vektor Frekuensi Terbobot
+// Kita memberikan bobot berbeda untuk setiap field agar hasil lebih akurat
+const getWeightedVector = (userProfile) => {
+    const vector = {};
     
-    let dotProduct = 0;
-    intersection.forEach(word => {
-        dotProduct += vecA[word] * vecB[word];
+    // Memberikan bobot kepentingan (Weighting)
+    const preferences = [
+        { value: userProfile.favBahan, weight: 3 },      // Bahan sangat penting untuk kenyamanan
+        { value: userProfile.gayaPakaian, weight: 2.5 }, // Gaya menentukan look
+        { value: userProfile.warnaFavorit, weight: 2 },  // Warna adalah preferensi visual
+        { value: userProfile.motifDisukai, weight: 1.5 } // Motif sebagai pelengkap
+    ];
+
+    preferences.forEach(pref => {
+        if (pref.value) {
+            const tokens = tokenize(pref.value);
+            tokens.forEach(token => {
+                vector[token] = (vector[token] || 0) + pref.weight;
+            });
+        }
     });
-
-    const magA = Math.sqrt(Object.values(vecA).reduce((sum, val) => sum + val * val, 0));
-    const magB = Math.sqrt(Object.values(vecB).reduce((sum, val) => sum + val * val, 0));
-
-    if (!magA || !magB) return 0;
-    return dotProduct / (magA * magB);
+    return vector;
 };
 
-// 4. Fungsi Utama Rekomendasi
+// 3. Fungsi Utama Rekomendasi
 export const getRecommendations = (userProfile, allProducts) => {
-    if (!userProfile) return [];
+    if (!userProfile || !allProducts) return [];
 
-    // Gabungkan preferensi user menjadi satu string "dokumen user"
-    const userString = `${userProfile.warnaFavorit} ${userProfile.gayaPakaian} ${userProfile.motifDisukai}`;
-    const userTokens = tokenize(userString);
-    const userTF = getTF(userTokens);
+    // Buat Vektor Preferensi User (Weighted)
+    const userVector = getWeightedVector(userProfile);
+    const userWords = Object.keys(userVector);
 
     const scoredProducts = allProducts.map(product => {
-        const productTokens = tokenize(product.description);
-        const productTF = getTF(productTokens);
+        // Gabungkan fitur produk (Bahan, Gaya, Motif) + Warna + Deskripsi untuk perbandingan
+        const prodFeatures = product.features || [];
+        const prodColors = product.colors?.map(c => c.name).join(" ") || "";
         
-        // Hitung skor kemiripan
-        const score = calculateCosineSimilarity(userTF, productTF);
+        // Membentuk "Dokumen Produk" yang terstruktur
+        const productString = `${prodFeatures.join(" ")} ${prodColors} ${product.description || ""}`;
+        const productTokens = tokenize(productString);
         
-        return { ...product, similarityScore: score };
+        // Hitung skor berdasarkan irisan kata (Intersection Score)
+        let dotProduct = 0;
+        const productTF = {};
+        
+        productTokens.forEach(word => {
+            productTF[word] = (productTF[word] || 0) + 1;
+        });
+
+        userWords.forEach(word => {
+            if (productTF[word]) {
+                // Skor = Bobot User * Kemunculan di Produk
+                dotProduct += userVector[word] * productTF[word];
+            }
+        });
+
+        // Hitung Magnitude untuk Normalisasi (Cosine-like)
+        const magUser = Math.sqrt(Object.values(userVector).reduce((sum, val) => sum + val * val, 0));
+        const magProd = Math.sqrt(Object.values(productTF).reduce((sum, val) => sum + val * val, 0));
+
+        let finalScore = 0;
+        if (magUser && magProd) {
+            finalScore = dotProduct / (magUser * magProd);
+        }
+
+        return { 
+            ...product, 
+            similarityScore: parseFloat(finalScore.toFixed(4)) 
+        };
     });
 
-    // Urutkan berdasarkan skor tertinggi (Ranking)
+    // Ranking & Filtering
     return scoredProducts
-        .filter(p => p.similarityScore > 0) // Hanya tampilkan yang ada kemiripan
+        .filter(p => p.similarityScore > 0) 
         .sort((a, b) => b.similarityScore - a.similarityScore);
 };

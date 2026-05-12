@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-lea
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
-import { Search, Navigation, MapPin } from 'lucide-react';
+import { Search, Navigation, MapPin, Ruler, Phone } from 'lucide-react';
 
 // Ikon Leaflet
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -23,7 +23,6 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // --- STATE UNTUK API WILAYAH ---
   const [provinces, setProvinces] = useState([]);
   const [regencies, setRegencies] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -43,24 +42,45 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
     tinggiBadan: "",
     beratBadan: "",
     rekomendasiUkuran: "", 
+    estimasiLD: "", 
+    estimasiPP: "", 
     warnaFavorit: "",
     favBahan: "",
     gayaPakaian: "",
-    motifDisukai: ""
+    motifDisukai: "",
+    kategoriFavorit: ""
   });
 
-  const hitungRekomendasiUkuran = (tb, bb) => {
+  const hitungDetailFisik = (tb, bb) => {
+    const tinggi = parseInt(tb);
     const berat = parseInt(bb);
-    if (!berat) return "";
-    if (berat < 45) return "S";
-    if (berat >= 45 && berat < 55) return "M";
-    if (berat >= 55 && berat < 65) return "L";
-    if (berat >= 65) return "XL";
-    return "All Size";
+
+    if (!tinggi || !berat || tinggi <= 0 || berat <= 0) {
+    return { label: "Input Tidak Valid", ld: 0, pp: 0 };
+  }
+
+
+    let estLD = Math.round((berat * 1.2) + (tinggi * 0.15) + 15);
+    let estPP = Math.round(tinggi * 0.45); 
+
+    let label = "M"; 
+    
+    if (berat >= 45 && berat < 55) {
+      label = "M";
+    } else if (berat >= 55 && berat < 65) {
+      label = "L";
+    } else if (berat >= 65 && berat <= 80) {
+      label = "XL";
+    } else if (berat > 80) {
+      label = "XL"; 
+    } else {
+      label = "M"; 
+    }
+
+    return { label, ld: estLD, pp: estPP };
   };
 
   useEffect(() => {
-    // Load Data Provinsi dari API
     axios.get('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
       .then(res => setProvinces(res.data))
       .catch(err => console.error("Gagal memuat provinsi", err));
@@ -74,26 +94,27 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
         ...prev,
         ...parsedUser,
         name: parsedUser.nama || parsedUser.name || "",
+        phone: parsedUser.phone || "",
         tinggiBadan: p.tinggiBadan || "",
         beratBadan: p.beratBadan || "",
+        estimasiLD: p.estimasiLD || "",
+        estimasiPP: p.estimasiPP || "",
         warnaFavorit: p.warnaFavorit || "",
         favBahan: p.favBahan || "",
         gayaPakaian: p.gayaPakaian || "",
         motifDisukai: p.motifDisukai || "",
+        kategoriFavorit: p.kategoriFavorit || "", 
         rekomendasiUkuran: p.rekomendasiUkuran || ""
       }));
     }
   }, []);
 
-  // --- HANDLER API WILAYAH ---
   const handleProvinceChange = async (e) => {
     const id = e.target.value;
     const name = e.target.options[e.target.selectedIndex].text;
-    
     setUserData(prev => ({ ...prev, province: name, city: "", district: "" }));
     setRegencies([]);
     setDistricts([]);
-
     if (id) {
       const res = await axios.get(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${id}.json`);
       setRegencies(res.data);
@@ -103,10 +124,8 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
   const handleCityChange = async (e) => {
     const id = e.target.value;
     const name = e.target.options[e.target.selectedIndex].text;
-    
     setUserData(prev => ({ ...prev, city: name, district: "" }));
     setDistricts([]);
-
     if (id) {
       const res = await axios.get(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${id}.json`);
       setDistricts(res.data);
@@ -123,30 +142,19 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
     setUserData(prev => {
       const newData = { ...prev, [name]: value };
       if (name === "tinggiBadan" || name === "beratBadan") {
-        newData.rekomendasiUkuran = hitungRekomendasiUkuran(newData.tinggiBadan, newData.beratBadan);
+        const detail = hitungDetailFisik(newData.tinggiBadan, newData.beratBadan);
+        newData.rekomendasiUkuran = detail.label;
+        newData.estimasiLD = detail.ld;
+        newData.estimasiPP = detail.pp;
       }
       return newData;
     });
-  };
-
-  const handleSearchLocation = async () => {
-    if (!searchQuery) return;
-    try {
-      const res = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${searchQuery}`);
-      if (res.data.length > 0) {
-        const { lat, lon } = res.data[0];
-        setUserData(prev => ({ ...prev, location: { lat: parseFloat(lat), lng: parseFloat(lon) } }));
-      }
-    } catch (err) {
-      console.error("Gagal mencari lokasi");
-    }
   };
 
   const handleSave = async () => {
     try {
       const rawData = localStorage.getItem('user');
       if (!rawData) return alert("Sesi habis, silakan login ulang");
-      
       const storedUser = JSON.parse(rawData);
       const userId = storedUser.id || storedUser._id; 
       const token = localStorage.getItem('token');
@@ -154,21 +162,25 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
       const response = await axios.put(`http://localhost:5000/api/auth/update/${userId}`, {
           ...userData,
           nama: userData.name,
+          phone: userData.phone,
           profiling: {
             tinggiBadan: userData.tinggiBadan,
             beratBadan: userData.beratBadan,
             rekomendasiUkuran: userData.rekomendasiUkuran,
+            estimasiLD: userData.estimasiLD,
+            estimasiPP: userData.estimasiPP,
             warnaFavorit: userData.warnaFavorit,
             favBahan: userData.favBahan,
             gayaPakaian: userData.gayaPakaian,
-            motifDisukai: userData.motifDisukai
+            motifDisukai: userData.motifDisukai,
+            kategoriFavorit: userData.kategoriFavorit 
           }
       }, {
           headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.status === 200) {
-        alert("Profil & Alamat Berhasil Disimpan!");
+        alert("Profil & Data Fisik Berhasil Disimpan!");
         const updatedLocalStorageUser = { ...storedUser, ...response.data.user };
         localStorage.setItem('user', JSON.stringify(updatedLocalStorageUser));
         setIsEditing(false);
@@ -232,17 +244,22 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
             <hr className="mb-5" />
 
             <div className="row g-4 text-start">
-              {/* BAGIAN ALAMAT (DENGAN API WILAYAH) */}
               <div className="col-lg-6">
                 <h6 className="fw-bold mb-3 text-uppercase text-primary d-flex align-items-center gap-2">
                   <MapPin size={18} /> Detail Alamat Pengiriman
                 </h6>
-                
                 <div className="mb-3">
                   <label className="small fw-bold text-secondary">Nama Lengkap Penerima</label>
                   <input name="name" disabled={!isEditing} className="form-control bg-light border-0" value={userData.name} onChange={handleInputChange} />
                 </div>
-
+                {/* INPUT NOMOR TELEPON */}
+                <div className="mb-3">
+                  <label className="small fw-bold text-secondary">Nomor Telepon</label>
+                  <div className="input-group">
+                    <span className="input-group-text bg-light border-0"><Phone size={16}/></span>
+                    <input name="phone" disabled={!isEditing} className="form-control bg-light border-0" placeholder="08xxxx" value={userData.phone} onChange={handleInputChange} />
+                  </div>
+                </div>
                 <div className="row g-2 mb-3">
                   <div className="col-md-6">
                     <label className="small fw-bold text-secondary">Provinsi</label>
@@ -259,7 +276,6 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
                     </select>
                   </div>
                 </div>
-
                 <div className="row g-2 mb-3">
                   <div className="col-md-6">
                     <label className="small fw-bold text-secondary">Kecamatan</label>
@@ -273,26 +289,22 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
                     <input name="postalCode" type="number" disabled={!isEditing} className="form-control bg-light border-0" placeholder="Kode Pos" value={userData.postalCode} onChange={handleInputChange} />
                   </div>
                 </div>
-
                 <div className="mb-3">
                   <label className="small fw-bold text-secondary">Nama Jalan / No. Rumah</label>
                   <textarea name="address" disabled={!isEditing} className="form-control bg-light border-0" rows="3" placeholder="Contoh: Jl. Sudirman No. 123, Blok A" value={userData.address} onChange={handleInputChange}></textarea>
                 </div>
               </div>
 
-              {/* BAGIAN PETA */}
               <div className="col-lg-6">
                 <h6 className="fw-bold mb-3 text-uppercase text-primary d-flex align-items-center gap-2">
                   <Navigation size={18} /> Titik Koordinat GPS
                 </h6>
-                
                 {isEditing && (
                   <div className="input-group mb-2 shadow-sm">
                     <input type="text" className="form-control border-0" placeholder="Cari alamat di peta..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                    <button className="btn btn-primary" onClick={handleSearchLocation}><Search size={18}/></button>
+                    <button className="btn btn-primary" onClick={() => {}}><Search size={18}/></button>
                   </div>
                 )}
-
                 <div style={{ height: '300px', borderRadius: '15px' }} className="border shadow-sm overflow-hidden mb-2">
                   <MapContainer center={userData.location} zoom={15} style={{ height: '100%', width: '100%' }}>
                     <ChangeMapView center={userData.location} />
@@ -300,44 +312,70 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
                     <LocationPicker />
                   </MapContainer>
                 </div>
-                <small className="text-muted">*Klik peta untuk menentukan titik kurir yang akurat.</small>
               </div>
 
-              {/* USER PROFILING (TETAP SAMA) */}
               <div className="col-12">
                 <div className="p-4 rounded-4 bg-light border border-2">
-                  <h6 className="fw-bold mb-4 text-uppercase text-center text-primary">Data Profiling Rekomendasi</h6>
+                  <h6 className="fw-bold mb-4 text-uppercase text-center text-primary">Data Profiling & Klasifikasi Fisik</h6>
                   <div className="row g-3">
                     <div className="col-md-3">
                       <label className="small fw-bold">Tinggi Badan (cm)</label>
-                      <input name="tinggiBadan" type="number" disabled={!isEditing} className="form-control" value={userData.tinggiBadan} onChange={handleInputChange} placeholder="165" />
+                      <input name="tinggiBadan" type="number" disabled={!isEditing} className="form-control" value={userData.tinggiBadan} onChange={handleInputChange} />
                     </div>
                     <div className="col-md-3">
                       <label className="small fw-bold">Berat Badan (kg)</label>
-                      <input name="beratBadan" type="number" disabled={!isEditing} className="form-control" value={userData.beratBadan} onChange={handleInputChange} placeholder="55" />
+                      <input name="beratBadan" type="number" disabled={!isEditing} className="form-control" value={userData.beratBadan} onChange={handleInputChange} />
                     </div>
-                    <div className="col-md-6 text-center">
-                      <div className="p-2 rounded-3 bg-white border border-primary-subtle shadow-sm">
-                        <p className="small mb-1 text-muted fw-bold">REKOMENDASI UKURAN KAMU:</p>
-                        <h2 className="fw-bold text-primary mb-0">{userData.rekomendasiUkuran || "-"}</h2>
+                    
+                    <div className="col-md-6">
+                      <div className="row g-2">
+                         <div className="col-4">
+                            <div className="p-2 rounded bg-white border text-center">
+                               <p className="extra-small mb-0 text-muted fw-bold">SIZE</p>
+                               <h5 className="fw-bold text-primary mb-0">{userData.rekomendasiUkuran || "-"}</h5>
+                            </div>
+                         </div>
+                         <div className="col-4">
+                            <div className="p-2 rounded bg-white border text-center">
+                               <p className="extra-small mb-0 text-muted fw-bold">EST. LD</p>
+                               <h5 className="fw-bold text-dark mb-0">{userData.estimasiLD || "0"} cm</h5>
+                            </div>
+                         </div>
+                         <div className="col-4">
+                            <div className="p-2 rounded bg-white border text-center">
+                               <p className="extra-small mb-0 text-muted fw-bold">EST. PP</p>
+                               <h5 className="fw-bold text-dark mb-0">{userData.estimasiPP || "0"} cm</h5>
+                            </div>
+                         </div>
                       </div>
                     </div>
                     
-                    <div className="col-md-3">
+                    <div className="col-md-4">
+                      <label className="small fw-bold">Kategori Produk</label>
+                      <select name="kategoriFavorit" disabled={!isEditing} className="form-select" value={userData.kategoriFavorit} onChange={handleInputChange}>
+                        <option value="">Pilih Kategori</option>
+                        <option value="Gamis">Gamis</option>
+                        <option value="Hijab">Hijab</option>
+                        <option value="Mukena">Mukena</option>
+                        <option value="Baju">Blouse</option>
+                      </select>
+                    </div>
+                    <div className="col-md-4">
                       <label className="small fw-bold">Warna Favorit</label>
                       <select name="warnaFavorit" disabled={!isEditing} className="form-select" value={userData.warnaFavorit} onChange={handleInputChange}>
                         <option value="">Pilih Warna</option>
-                        <option value="Black">Black</option>
-                        <option value="White">White</option>
-                        <option value="Choco">Choco</option>
-                        <option value="Green">Green</option>
-                        <option value="Red">Red</option>
-                        <option value="Blue">Blue</option>
-                        <option value="Cream">Cream</option>
-                        <option value="Grey">Grey</option>
+                        <option value="Hitam">Hitam</option>
+                        <option value="Putih">Putih</option>
+                        <option value="Coklat">Coklat</option>
+                        <option value="Hijau">Hijau</option>
+                        <option value="Merah">Merah</option>
+                        <option value="Biru Tua">Biru Tua</option>
+                        <option value="Biru Muda">Biru Muda</option>
+                        <option value="Krem">Krem</option>
+                        <option value="Abu Abu">Abu Abu</option>
                       </select>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-4">
                       <label className="small fw-bold">Bahan Favorit</label>
                       <select name="favBahan" disabled={!isEditing} className="form-select" value={userData.favBahan} onChange={handleInputChange}>
                         <option value="">Pilih Bahan</option>
@@ -347,7 +385,7 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
                         <option value="Jersey">Jersey</option>
                       </select>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-6">
                       <label className="small fw-bold">Gaya Pakaian</label>
                       <select name="gayaPakaian" disabled={!isEditing} className="form-select" value={userData.gayaPakaian} onChange={handleInputChange}>
                         <option value="">Pilih Gaya</option>
@@ -356,7 +394,7 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
                         <option value="Minimalis">Minimalis</option>
                       </select>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-6">
                       <label className="small fw-bold">Motif Disukai</label>
                       <select name="motifDisukai" disabled={!isEditing} className="form-select" value={userData.motifDisukai} onChange={handleInputChange}>
                         <option value="">Pilih Motif</option>
@@ -372,7 +410,7 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
             <div className="d-flex justify-content-center mt-5 pt-3 border-top">
                 {isEditing && (
                   <button onClick={handleSave} className="btn btn-warning text-white px-5 py-3 fw-bold shadow-lg rounded-pill">
-                    Simpan Perubahan & Profiling
+                    Simpan Perubahan Profiling
                   </button>
                 )}
             </div>
