@@ -22,14 +22,25 @@
   color: #333;
 }
 
+/* PERBAIKAN: Mengubah 'shadow:' menjadi 'box-shadow:' dan menambahkan transition */
+.shadow-hover {
+  transition: box-shadow 0.3s ease;
+}
+
 .shadow-hover:hover {
-  shadow: 0 10px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* PERBAIKAN: Menambahkan transition dasar agar efek zoom gambar halus (smooth) */
+.scale-hover {
+  transition: transform 0.3s ease;
 }
 
 /* Efek Zoom Gambar saat di-hover */
 .card:hover .scale-hover {
   transform: scale(1.1);
 }
+
 @media (min-width: 992px) {
   .px-lg-custom {
     padding-left: 10% !important;
