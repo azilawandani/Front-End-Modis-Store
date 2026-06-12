@@ -89,7 +89,7 @@ const CheckoutPage = () => {
         alamatPengiriman: { alamatLengkap: userAddress }
       };
 
-      const response = await axios.post('http://localhost:5000/api/orders/checkout', orderData);
+      const response = await axios.post('https://back-end-modis-store.vercel.app/api/orders/checkout', orderData);
 
       if (response.status === 201) {
         sessionStorage.setItem('lastOrder', JSON.stringify({ ...orderData, _id: response.data.order?._id }));

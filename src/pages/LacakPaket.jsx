@@ -12,7 +12,7 @@ const LacakPaket = () => {
   useEffect(() => {
     const fetchOrderDetail = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/orders/track/${orderId}`);
+        const response = await axios.get(`https://back-end-modis-store.vercel.app/api/orders/track/${orderId}`);
         setCurrentOrder(response.data);
       } catch (error) {
         console.error("Gagal mengambil detail pelacakan:", error);

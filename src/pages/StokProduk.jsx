@@ -16,7 +16,7 @@ const StokProduk = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/products');
+      const res = await axios.get('https://back-end-modis-store.vercel.app/api/products');
       setProducts(res.data);
     } catch (err) {
       console.error("Gagal mengambil data stok");
@@ -26,7 +26,7 @@ const StokProduk = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Hapus produk ini dari stok?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/products/${id}`);
+        await axios.delete(`https://back-end-modis-store.vercel.app/api/products/${id}`);
         fetchProducts(); 
       } catch (err) {
         alert("Gagal menghapus produk");
@@ -45,7 +45,7 @@ const StokProduk = () => {
     e.preventDefault();
     try {
       // Endpoint disesuaikan dengan aksi PUT kamu
-      await axios.put(`http://localhost:5000/api/products/update/${selectedProduct._id}`, selectedProduct);
+      await axios.put(`https://back-end-modis-store.vercel.app/api/products/update/${selectedProduct._id}`, selectedProduct);
       alert("✅ Stok dan Data Produk berhasil diperbarui!");
       setShowEditModal(false);
       fetchProducts();

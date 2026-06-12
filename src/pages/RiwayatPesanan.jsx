@@ -16,7 +16,7 @@ const RiwayatPesanan = () => {
       const userId = storedUser?.id || storedUser?._id;
 
       if (userId) {
-        const response = await axios.get(`http://localhost:5000/api/orders/user/${userId}`);
+        const response = await axios.get(`https://back-end-modis-store.vercel.app/api/orders/user/${userId}`);
         // Pastikan response.data adalah array, jika tidak set array kosong
         setOrders(Array.isArray(response.data) ? response.data : []);
       }
@@ -96,7 +96,7 @@ const RiwayatPesanan = () => {
   const handleKonfirmasiSelesai = async (orderId) => {
     if (!window.confirm("Apakah paket sudah Anda terima dengan baik?")) return;
     try {
-      await axios.put(`http://localhost:5000/api/orders/confirm-finish/${orderId}`);
+      await axios.put(`https://back-end-modis-store.vercel.app/api/orders/confirm-finish/${orderId}`);
       alert("✅ Pesanan Selesai! Terima kasih telah berbelanja.");
       fetchOrders(); 
     } catch (error) {

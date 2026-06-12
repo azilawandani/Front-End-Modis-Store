@@ -159,7 +159,7 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
       const userId = storedUser.id || storedUser._id; 
       const token = localStorage.getItem('token');
 
-      const response = await axios.put(`http://localhost:5000/api/auth/update/${userId}`, {
+      const response = await axios.put(`https://back-end-modis-store.vercel.app/api/auth/update/${userId}`, {
           ...userData,
           nama: userData.name,
           phone: userData.phone,

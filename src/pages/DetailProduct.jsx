@@ -24,7 +24,7 @@ const DetailProduct = () => {
     const fetchProductDetail = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:5000/api/products');
+        const res = await axios.get('https://back-end-modis-store.vercel.app/api/products');
         const foundProduct = res.data.find((p) => p.slug === slug);
         
         if (foundProduct) {

@@ -11,7 +11,7 @@ const SignUp = () => {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/auth/register', {
+      await axios.post('https://back-end-modis-store.vercel.app/api/auth/register', {
         nama,
         email,
         password

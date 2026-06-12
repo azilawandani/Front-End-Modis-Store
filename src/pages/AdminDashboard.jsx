@@ -41,8 +41,8 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const resProd = await axios.get('http://localhost:5000/api/products');
-      const resOrders = await axios.get('http://localhost:5000/api/orders/all');
+      const resProd = await axios.get('https://back-end-modis-store.vercel.app/api/products');
+      const resOrders = await axios.get('https://back-end-modis-store.vercel.app/api/orders/all');
       const allOrders = resOrders.data || [];
       const totalRevenue = allOrders.reduce((acc, curr) => acc + (curr.totalHarga || 0), 0);
 
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/products/${id}`);
+        await axios.delete(`https://back-end-modis-store.vercel.app/api/products/${id}`);
         alert("✅ Produk berhasil dihapus!");
         fetchData();
       } catch (err) {
@@ -121,7 +121,7 @@ const AdminDashboard = () => {
         features: [product.bahan, product.gaya, product.motif] 
       };
 
-      await axios.post('http://localhost:5000/api/products/add', dataToSend);
+      await axios.post('https://back-end-modis-store.vercel.app/api/products/add', dataToSend);
       alert("✅ Produk Berhasil Ditambahkan!");
       setActiveTab('overview');
       fetchData(); 

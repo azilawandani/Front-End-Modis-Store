@@ -19,7 +19,7 @@ const Recommendation = () => {
           const userP = activeProfile.profiling || activeProfile;
           setUserProfile(activeProfile);
 
-          const res = await axios.get('http://localhost:5000/api/products');
+          const res = await axios.get('https://back-end-modis-store.vercel.app/api/products');
           const allProducts = res.data;
 
           const userFavCategory = userP.kategoriFavorit?.trim().toLowerCase();

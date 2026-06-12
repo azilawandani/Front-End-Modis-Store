@@ -12,7 +12,7 @@ const PesananAdmin = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/orders/all');
+      const res = await axios.get('https://back-end-modis-store.vercel.app/api/orders/all');
       setOrders(res.data);
       setLoading(false);
     } catch (err) {
@@ -59,7 +59,7 @@ const PesananAdmin = () => {
     if (!nextStatus) return;
 
     try {
-      await axios.put(`http://localhost:5000/api/orders/update-status/${id}`, {
+      await axios.put(`https://back-end-modis-store.vercel.app/api/orders/update-status/${id}`, {
         status: nextStatus,
         keterangan: ket,
         lokasi: "Gudang MODIS Pekanbaru"
