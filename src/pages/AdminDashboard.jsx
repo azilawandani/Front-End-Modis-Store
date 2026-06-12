@@ -32,7 +32,7 @@ const AdminDashboard = () => {
   const [recentProducts, setRecentProducts] = useState([]);
   
   const [product, setProduct] = useState({
-    name: '', price: '', category: '', img: '', warna: '', ukuran: '', bahan: '', gaya: '', motif: '' 
+    name: '', price: '', category: '', stock: '', img: '', warna: '', ukuran: '', bahan: '', gaya: '', motif: '' 
   });
   
   const [sizeDetails, setSizeDetails] = useState({});
@@ -109,6 +109,7 @@ const AdminDashboard = () => {
         slug: product.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
         price: Number(product.price),
         category: product.category,
+        stock: Number(product.stock),
         description: `${product.name} bahan ${product.bahan}, gaya ${product.gaya}, motif ${product.motif}`,
         img: product.img,
         // SEKARANG MENGIRIM GAMBAR SESUAI INPUT PER WARNA
@@ -124,7 +125,7 @@ const AdminDashboard = () => {
       alert("✅ Produk Berhasil Ditambahkan!");
       setActiveTab('overview');
       fetchData(); 
-      setProduct({ name: '', price: '', category: '', img: '', warna: '', ukuran: '', bahan: '', gaya: '', motif: '' });
+      setProduct({ name: '', price: '', category: '', stock: '', img: '', warna: '', ukuran: '', bahan: '', gaya: '', motif: '' });
       setSizeDetails({});
       setColorImages({});
     } catch (error) {
@@ -252,11 +253,11 @@ const AdminDashboard = () => {
                 <label className="form-label fw-bold small">NAMA PRODUK</label>
                 <input name="name" className="form-control shadow-none" value={product.name} onChange={handleInputChange} required />
               </div>
-              <div className="col-md-3">
+              <div className="col-md-2">
                 <label className="form-label fw-bold small">HARGA (RP)</label>
                 <input name="price" type="number" className="form-control shadow-none" value={product.price} onChange={handleInputChange} required />
               </div>
-              <div className="col-md-3">
+              <div className="col-md-2">
                 <label className="form-label fw-bold small">KATEGORI</label>
                 <select name="category" className="form-select shadow-none" value={product.category} onChange={handleInputChange} required>
                   <option value="">Pilih...</option>
@@ -265,6 +266,10 @@ const AdminDashboard = () => {
                   <option value="Hijab">Hijab</option>
                   <option value="Mukena">Mukena</option>
                 </select>
+              </div>
+              <div className="col-md-2">
+                <label className="form-label fw-bold small">STOK BARANG</label>
+                <input name="stock" type="number" className="form-control shadow-none" value={product.stock} onChange={handleInputChange} required placeholder="0" />
               </div>
 
               {/* DYNAMIC SECTION FOR SIZE & COLOR IMAGES */}
