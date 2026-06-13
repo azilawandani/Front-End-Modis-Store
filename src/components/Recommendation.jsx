@@ -3,6 +3,10 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Sparkles, Ruler, AlertCircle } from 'lucide-react';
 
+// Ikon Leaflet
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
 const Recommendation = () => {
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
@@ -28,7 +32,7 @@ const Recommendation = () => {
           // 1. PROSES FILTER & SKORING
           const scoredProducts = allProducts
             .filter(product => {
-              // Pastikan stok tersedia (menggunakan field 'stock' sesuai data MongoDB kamu)
+              // Pastikan stok tersedia
               const hasStock = Number(product.stock) > 0;
               if (!hasStock) return false;
 
@@ -43,7 +47,7 @@ const Recommendation = () => {
               const prodFeatures = product.features || [];
               const productSizes = product.sizes || [];
               
-              // A. LOGIKA CONTENT-BASED FILTERING (0.70)
+              // A. LOGIKA CONTENT-BASED FILTERING (Maksimal Kontribusi Berbobot)
               // Cek Bahan
               if (prodFeatures.some(f => f?.toLowerCase().includes(userP.favBahan?.toLowerCase()))) score += 0.30;
               // Cek Gaya
@@ -56,7 +60,7 @@ const Recommendation = () => {
               );
               if (isColorMatch) score += 0.15;
 
-              // B. LOGIKA UKURAN CERDAS (0.30)
+              // B. LOGIKA UKURAN CERDAS
               let suggestedSize = "All Size";
               let sizeDetail = null;
               let isFit = true;
@@ -75,9 +79,14 @@ const Recommendation = () => {
                 }
               }
 
+              // ========================================================
+              // 🛠️ PERBAIKAN UTAMA: KUNCI TOTAL SKOR MAKSIMAL 1.0 (100%)
+              // ========================================================
+              const finalScore = Math.min(Math.max(0, score), 1.0);
+
               return { 
                 ...product, 
-                similarityScore: Math.max(0, score),
+                similarityScore: parseFloat(finalScore.toFixed(4)),
                 suggestedSize: suggestedSize,
                 sizeChart: sizeDetail,
                 isFit: isFit
@@ -92,7 +101,6 @@ const Recommendation = () => {
           // 3. MEKANISME FALLBACK JIKA REKOMENDASI KOSONG
           if (results.length === 0) {
             setIsFallback(true);
-            // Ambil 4 produk terbaru yang stoknya masih ada
             results = allProducts
               .filter(p => Number(p.stock) > 0)
               .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -169,7 +177,7 @@ const Recommendation = () => {
                   <h6 className="fw-bold mb-1 text-truncate" style={{ fontSize: '14px' }}>{product.name}</h6>
                   <p className="text-muted extra-small mb-2">{product.category}</p>
                   
-                  {/* DETAIL UKURAN - Sembunyikan detail presisi jika mode fallback */}
+                  {/* DETAIL UKURAN */}
                   {!isFallback && (
                     <div className={`p-2 mb-3 rounded border ${product.isFit ? 'bg-light border-primary-subtle' : 'bg-danger-subtle border-danger'}`}>
                         <div className={`d-flex align-items-center gap-1 mb-1 ${product.isFit ? 'text-primary' : 'text-danger'}`}>
