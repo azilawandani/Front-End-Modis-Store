@@ -51,28 +51,30 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
     kategoriFavorit: ""
   });
 
- const hitungDetailFisik = (tinggi, berat) => {
-  if (!tinggi || !berat) return { label: "All Size", ld: 0, pp: 0 };
+  const hitungDetailFisik = (tinggi, berat) => {
+    if (!tinggi || !berat || isNaN(tinggi) || isNaN(berat)) {
+      return { label: "Belum Diatur", ld: 0, pp: 0 };
+    }
 
-  // PERBAIKAN: Konstanta diubah dari 15 menjadi 10 agar perhitungan LD seimbang dan tidak bias
-  let estLD = Math.round((berat * 1.2) + (tinggi * 0.15) + 10);
-  let estPP = Math.round(tinggi * 0.45);
+    // PERBAIKAN SINKRONISASI: Konstanta disamakan menjadi + 10 sesuai backend terupdate
+    let estLD = Math.round((berat * 1.2) + (tinggi * 0.15) + 10);
+    let estPP = Math.round(tinggi * 0.45);
 
-  let label = "All Size";
+    let label = "All Size";
 
-  // 2. Logika Penentuan Label Ukuran (Menggunakan Rentang Gabungan yang Logis)
-  if (berat < 50 && tinggi < 155) {
-    label = "S";
-  } else if (berat >= 50 && berat < 60 && tinggi >= 155 && tinggi < 165) {
-    label = "M";
-  } else if (berat >= 60 && berat < 75 && tinggi >= 165 && tinggi < 175) {
-    label = "L";
-  } else if (berat >= 75 || tinggi >= 175) {
-    label = "XL";
-  }
-  
-  return { label, ld: estLD, pp: estPP };
-};
+    // Logika Penentuan Label Ukuran (Menggunakan Rentang Gabungan yang Logis)
+    if (berat < 50 && tinggi < 155) {
+      label = "S";
+    } else if (berat >= 50 && berat < 60 && tinggi >= 155 && tinggi < 165) {
+      label = "M";
+    } else if (berat >= 60 && berat < 75 && tinggi >= 165 && tinggi < 175) {
+      label = "L";
+    } else if (berat >= 75 || tinggi >= 175) {
+      label = "XL";
+    }
+    
+    return { label, ld: estLD, pp: estPP };
+  };
 
   useEffect(() => {
     axios.get('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
@@ -136,7 +138,7 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
     setUserData(prev => {
       const newData = { ...prev, [name]: value };
       if (name === "tinggiBadan" || name === "beratBadan") {
-        const detail = hitungDetailFisik(newData.tinggiBadan, newData.beratBadan);
+        const detail = hitungDetailFisik(Number(newData.tinggiBadan), Number(newData.beratBadan));
         newData.rekomendasiUkuran = detail.label;
         newData.estimasiLD = detail.ld;
         newData.estimasiPP = detail.pp;
@@ -158,8 +160,8 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
           nama: userData.name,
           phone: userData.phone,
           profiling: {
-            tinggiBadan: userData.tinggiBadan,
-            beratBadan: userData.beratBadan,
+            tinggiBadan: Number(userData.tinggiBadan) || 0,
+            beratBadan: Number(userData.beratBadan) || 0,
             rekomendasiUkuran: userData.rekomendasiUkuran,
             estimasiLD: userData.estimasiLD,
             estimasiPP: userData.estimasiPP,
@@ -246,7 +248,6 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
                   <label className="small fw-bold text-secondary">Nama Lengkap Penerima</label>
                   <input name="name" disabled={!isEditing} className="form-control bg-light border-0" value={userData.name} onChange={handleInputChange} />
                 </div>
-                {/* INPUT NOMOR TELEPON */}
                 <div className="mb-3">
                   <label className="small fw-bold text-secondary">Nomor Telepon</label>
                   <div className="input-group">
