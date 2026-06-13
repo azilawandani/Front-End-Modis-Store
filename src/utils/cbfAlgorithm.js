@@ -17,10 +17,10 @@ const getWeightedVector = (userProfile) => {
     
     // Memberikan bobot kepentingan (Weighting)
     const preferences = [
-        { value: userProfile.favBahan, weight: 3 },      // Bahan sangat penting untuk kenyamanan
-        { value: userProfile.gayaPakaian, weight: 2.5 }, // Gaya menentukan look
-        { value: userProfile.warnaFavorit, weight: 2 },  // Warna adalah preferensi visual
-        { value: userProfile.motifDisukai, weight: 1.5 } // Motif sebagai pelengkap
+        { value: userProfile.favBahan, weight: 3 },      
+        { value: userProfile.gayaPakaian, weight: 2.5 }, 
+        { value: userProfile.motifDisukai, weight: 2 },
+        { value: userProfile.warnaFavorit, weight: 1.5 }
     ];
 
     preferences.forEach(pref => {

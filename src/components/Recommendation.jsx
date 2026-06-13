@@ -45,11 +45,11 @@ const Recommendation = () => {
               
               // A. LOGIKA CONTENT-BASED FILTERING (0.70)
               // Cek Bahan
-              if (prodFeatures.some(f => f?.toLowerCase().includes(userP.favBahan?.toLowerCase()))) score += 0.25;
+              if (prodFeatures.some(f => f?.toLowerCase().includes(userP.favBahan?.toLowerCase()))) score += 0.30;
               // Cek Gaya
-              if (prodFeatures.some(f => f?.toLowerCase().includes(userP.gayaPakaian?.toLowerCase()))) score += 0.20;
+              if (prodFeatures.some(f => f?.toLowerCase().includes(userP.gayaPakaian?.toLowerCase()))) score += 0.25;
               // Cek Motif
-              if (prodFeatures.some(f => f?.toLowerCase().includes(userP.motifDisukai?.toLowerCase()))) score += 0.10;
+              if (prodFeatures.some(f => f?.toLowerCase().includes(userP.motifDisukai?.toLowerCase()))) score += 0.20;
               // Cek Warna
               const isColorMatch = product.colors?.some(c => 
                 c.name?.trim().toLowerCase() === userP.warnaFavorit?.trim().toLowerCase()
