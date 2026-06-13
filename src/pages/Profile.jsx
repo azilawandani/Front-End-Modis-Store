@@ -51,7 +51,7 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
     kategoriFavorit: ""
   });
 
- const estimasiFisikModisStore = (tinggi, berat) => {
+ const hitungDetailFisik = (tinggi, berat) => {
   if (!tinggi || !berat) return { label: "All Size", ld: 0, pp: 0 };
 
   // PERBAIKAN: Konstanta diubah dari 15 menjadi 10 agar perhitungan LD seimbang dan tidak bias
