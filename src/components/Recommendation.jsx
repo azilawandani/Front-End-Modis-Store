@@ -149,9 +149,9 @@ const Recommendation = () => {
                 {/* Badge Match Score - Hanya muncul jika bukan fallback */}
                 {!isFallback && (
                   <div className="position-absolute top-0 end-0 m-2 z-3">
-                    <span className="badge bg-dark text-white shadow-sm" style={{ fontSize: '10px', borderRadius: '50px' }}>
-                      {(product.similarityScore * 100).toFixed(0)}% Match
-                    </span>
+                 <span className="badge bg-dark text-white shadow-sm" style={{ fontSize: '10px', borderRadius: '50px' }}>
+                  {Math.min(Math.round((product.similarityScore || 0) * 100), 100)}% Match
+                 </span>
                   </div>
                 )}
                 
