@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-lea
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
-import { Search, Navigation, MapPin, Ruler, Phone } from 'lucide-react';
+import { Search, Navigation, MapPin, Ruler, Phone, Sparkles } from 'lucide-react';
 
 // Ikon Leaflet
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -56,9 +56,8 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
     const berat = parseInt(bb);
 
     if (!tinggi || !berat || tinggi <= 0 || berat <= 0) {
-    return { label: "Input Tidak Valid", ld: 0, pp: 0 };
-  }
-
+      return { label: "Input Tidak Valid", ld: 0, pp: 0 };
+    }
 
     let estLD = Math.round((berat * 1.2) + (tinggi * 0.15) + 15);
     let estPP = Math.round(tinggi * 0.45); 
@@ -184,6 +183,9 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
         const updatedLocalStorageUser = { ...storedUser, ...response.data.user };
         localStorage.setItem('user', JSON.stringify(updatedLocalStorageUser));
         setIsEditing(false);
+        
+        // MAiNTENANCE ACTION: Paksa web reload sekilas agar LocalStorage langsung menyebar tanpa lag data
+        window.location.reload();
       }
     } catch (error) {
       alert("Gagal menyimpan.");
@@ -315,6 +317,19 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
               </div>
 
               <div className="col-12">
+                {/* MAINTENANCE ACTION: ONBOARDING TOOLTIP GUIDE FOR USER PROFILING */}
+                {(!userData.tinggiBadan || userData.tinggiBadan === "0") && (
+                  <div className="alert alert-warning border-0 shadow-sm rounded-4 mb-4 p-3 d-flex align-items-center gap-3 animate-pulse">
+                    <div className="p-2 rounded-3 bg-white text-warning shadow-sm">
+                      <Sparkles size={24} />
+                    </div>
+                    <div>
+                      <h6 className="fw-bold mb-1 text-dark">Lengkapi Profiling Fisik Anda!</h6>
+                      <p className="small mb-0 text-secondary">Klik tombol <b>"Edit Profil"</b> di atas, lalu masukkan data Tinggi & Berat Badan agar sistem AI cerdas kami bisa mencocokkan ukuran katalog butik yang paling pas untuk Anda.</p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="p-4 rounded-4 bg-light border border-2">
                   <h6 className="fw-bold mb-4 text-uppercase text-center text-primary">Data Profiling & Klasifikasi Fisik</h6>
                   <div className="row g-3">
@@ -409,8 +424,9 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
 
             <div className="d-flex justify-content-center mt-5 pt-3 border-top">
                 {isEditing && (
-                  <button onClick={handleSave} className="btn btn-warning text-white px-5 py-3 fw-bold shadow-lg rounded-pill">
-                    Simpan Perubahan Profiling
+                  /* MAINTENANCE ACTION: HIGH-CONTRAST CALL TO ACTION BUTTON WITH SHADOW EFFECT */
+                  <button onClick={handleSave} className="btn btn-success px-5 py-3 fw-bold text-white border-0 shadow-lg rounded-pill" style={{ fontSize: '15px', letterSpacing: '0.5px' }}>
+                     ✓ Simpan Perubahan Profiling Sekarang
                   </button>
                 )}
             </div>

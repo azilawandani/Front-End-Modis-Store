@@ -1,11 +1,32 @@
-import React from 'react';
-import { ArrowRight, ShoppingBag, Star, ShieldCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import Recommendation from '../components/Recommendation'; // 1. Import Komponen Rekomendasi
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, ShoppingBag, Star, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import Recommendation from '../components/Recommendation'; 
 
 const Landing = () => {
+  const navigate = useNavigate();
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    // MAINTENANCE ACTION: Mendeteksi profil user untuk memicu Onboarding Tooltip Guide
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      const profiling = parsedUser.profiling || {};
+      
+      // Jika pengguna sudah login tetapi data Tinggi Badan belum diisi atau bernilai 0
+      if (!profiling.tinggiBadan || profiling.tinggiBadan === 0 || profiling.tinggiBadan === "0") {
+        // Berikan delay 2 detik setelah halaman dimuat agar muncul secara halus (smooth transition)
+        const timer = setTimeout(() => {
+          setShowTooltip(true);
+        }, 2000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
   return (
-    <div className="bg-white">
+    <div className="bg-white position-relative">
       {/* Hero Section */}
       <header className="py-5" style={{ backgroundColor: '#f9f9f7' }}>
         <div className="container py-5">
@@ -67,7 +88,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* 2. SECTION REKOMENDASI (DITAMPILKAN DI SINI) */}
+      {/* SECTION REKOMENDASI */}
       <Recommendation />
 
       {/* Categories Section */}
@@ -107,6 +128,55 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* ======================================================== */}
+      {/* 🛠️ MAINTENANCE COMPONENT: FLOATING ONBOARDING TOOLTIP GUIDE */}
+      {/* ======================================================== */}
+      {showTooltip && (
+        <div 
+          className="position-fixed bottom-0 end-0 m-4 p-3 border-0 shadow-lg text-start d-flex align-items-start gap-3 bg-white"
+          style={{ 
+            zIndex: '1050', 
+            maxWidth: '350px', 
+            borderRadius: '16px',
+            borderLeft: '5px solid #E19E44',
+            animation: 'slideUp 0.5s ease-out'
+          }}
+        >
+          <div className="p-2 rounded-3 text-white shadow-sm d-flex align-items-center justify-content-center" style={{ backgroundColor: '#E19E44' }}>
+            <Sparkles size={20} />
+          </div>
+          
+          <div className="flex-grow-1 pe-2">
+            <h6 className="fw-bold text-dark mb-1" style={{ fontSize: '14px' }}>Rekomendasi Belum Maksimal!</h6>
+            <p className="text-muted mb-2" style={{ fontSize: '12px', lineHeight: '1.4' }}>
+              Sistem mendeteksi Anda belum melengkapi data ukuran fisik. Yuk atur sekarang agar AI pintar kami bisa mencocokkan baju yang pas untuk lingkar dada Anda.
+            </p>
+            <button 
+              onClick={() => navigate('/profile')} 
+              className="btn btn-sm text-white fw-bold px-3 py-1.5 rounded-pill"
+              style={{ backgroundColor: '#4A4A2A', fontSize: '11px' }}
+            >
+              Atur Ukuran Tubuh
+            </button>
+          </div>
+
+          <button 
+            onClick={() => setShowTooltip(false)} 
+            className="btn p-0 text-muted border-0 bg-transparent mt-1"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* CSS Tambahan untuk animasi kelayakan UI (Opsional jika dipasang di file index.css) */}
+      <style>{`
+        @keyframes slideUp {
+          from { transform: translateY(100px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 };
