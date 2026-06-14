@@ -150,14 +150,14 @@ const Landing = () => {
           <div className="flex-grow-1 pe-2">
             <h6 className="fw-bold text-dark mb-1" style={{ fontSize: '14px' }}>Rekomendasi Belum Maksimal!</h6>
             <p className="text-muted mb-2" style={{ fontSize: '12px', lineHeight: '1.4' }}>
-              Sistem mendeteksi Anda belum melengkapi data profiling. Yuk atur sekarang agar AI pintar kami bisa mencocokkan baju yang pas selera dan ukuran Anda.
+              Sistem mendeteksi Anda belum melengkapi data profiling. Yuk atur sekarang agar AI pintar kami bisa mencocokkan baju yang pas dengan selera dan ukuran Anda.
             </p>
             <button 
               onClick={() => navigate('/profile')} 
               className="btn btn-sm text-white fw-bold px-3 py-1.5 rounded-pill"
               style={{ backgroundColor: '#4A4A2A', fontSize: '11px' }}
             >
-              Atur Ukuran Tubuh
+              Atur Data Profiling
             </button>
           </div>
 
