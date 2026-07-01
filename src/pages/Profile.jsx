@@ -64,15 +64,17 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
 
     let label = "M"; 
     
-  if (berat < 45) {
-    label = "S";
-  } else if (berat >= 45 && berat < 55) {
-    label = "M";
-  } else if (berat >= 55 && berat < 65) {
-    label = "L";
-  } else if (berat >= 65) {
-    label = "XL";
-  }
+    if (berat >= 45 && berat < 55) {
+      label = "M";
+    } else if (berat >= 55 && berat < 65) {
+      label = "L";
+    } else if (berat >= 65 && berat <= 80) {
+      label = "XL";
+    } else if (berat > 80) {
+      label = "XL"; 
+    } else {
+      label = "M"; 
+    }
 
     return { label, ld: estLD, pp: estPP };
   };
