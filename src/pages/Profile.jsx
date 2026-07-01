@@ -51,33 +51,34 @@ const Profile = ({ isLoggedIn, setIsLoggedIn }) => {
     kategoriFavorit: ""
   });
 
-  const hitungDetailFisik = (tb, bb) => {
-    const tinggi = parseInt(tb);
-    const berat = parseInt(bb);
+  // GANTI FUNGSI INI DI FILE FRONTEND (Profile.jsx) KAMU
+const hitungDetailFisik = (tb, bb) => {
+  const tinggi = parseInt(tb);
+  const berat = parseInt(bb);
 
-    if (!tinggi || !berat || tinggi <= 0 || berat <= 0) {
-      return { label: "Input Tidak Valid", ld: 0, pp: 0 };
-    }
+  if (!tinggi || !berat || tinggi <= 0 || berat <= 0 || isNaN(tinggi) || isNaN(berat)) {
+    return { label: "Input Tidak Valid", ld: 0, pp: 0 };
+  }
 
-    let estLD = Math.round((berat * 1.2) + (tinggi * 0.15) + 15);
-    let estPP = Math.round(tinggi * 0.45); 
+  // SINKRONISASI: Gunakan konstanta +10 sesuai backend bawaan database
+  let estLD = Math.round((berat * 1.2) + (tinggi * 0.15) + 10);
+  let estPP = Math.round(tinggi * 0.45); 
 
-    let label = "M"; 
-    
-    if (berat >= 45 && berat < 55) {
-      label = "M";
-    } else if (berat >= 55 && berat < 65) {
-      label = "L";
-    } else if (berat >= 65 && berat <= 80) {
-      label = "XL";
-    } else if (berat > 80) {
-      label = "XL"; 
-    } else {
-      label = "M"; 
-    }
+  let label = "M"; 
+  
+  // SINKRONISASI: Klasifikasi ukuran disamakan dengan tabel katalog butik
+  if (berat < 45) {
+    label = "S";
+  } else if (berat >= 45 && berat < 55) {
+    label = "M";
+  } else if (berat >= 55 && berat < 65) {
+    label = "L";
+  } else if (berat >= 65) {
+    label = "XL"; 
+  }
 
-    return { label, ld: estLD, pp: estPP };
-  };
+  return { label, ld: estLD, pp: estPP };
+};
 
   useEffect(() => {
     axios.get('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
